@@ -3,9 +3,10 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 let db = {
     localhost: 'mongodb://localhost:27017/TodoApp',
-    mlab: 'mongodb://cnps:Marley1543@ds215563.mlab.com:15563/learning-app'
+    mlab: process.env.MONGODB_URI
   };
-  mongoose.connect( db.localhost || db.mlab);
+  mongoose.connect( db.localhost || db.mlab );
+console.log(db);
 
 module.exports = {
     mongoose
