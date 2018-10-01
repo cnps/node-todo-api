@@ -18,6 +18,7 @@ app.post('/todos', (req, res) => {
 
     todo.save().then((doc) => {
         res.send(doc);
+        console.log('Created new doc');
     }, (e) => {
         res.status(400).send(e);
     });
@@ -43,6 +44,7 @@ app.get('/todos/:id', (req, res) => {
     Todo.findById(id).then((todo) => {
         if (todo) {
             res.send({todo});
+            console.log(`Found doc with id: ${id}`);
         } else {
             return res.status(404).send('404 - Object id not found');
         }
@@ -51,6 +53,26 @@ app.get('/todos/:id', (req, res) => {
         
     })
 });
+
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return  res.status(404).send('404 - Object id not valid'); 
+      }
+  
+      Todo.findByIdAndRemove(id).then((todo) => {
+          if (todo) {
+              res.send({todo});
+              console.log(`Deleted doc with id: ${id}`);
+          } else {
+              return res.status(404).send('404 - Object id not found');
+          }
+      }, (e) => {
+          res.status(400).send('400 - error');
+          
+      })
+})
 
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
