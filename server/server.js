@@ -19,14 +19,14 @@ app.use(bodyParser.json());
 //********
 //* POST *
 //******** 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     var todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _author: req.user._id
     });
 
     todo.save().then((doc) => {
         res.send(doc);
-        console.log('Created new doc');
     }, (e) => {
         res.status(400).send(e);
     });
@@ -40,7 +40,6 @@ app.post('/users', (req, res) => {
         return user.generateAuthToken();
     }).then((token) => {
         res.header('x-auth', token).send(user);
-        console.log('created new user');
     }).catch((e) => {
         res.status(400).send(e);   
     })
@@ -63,27 +62,29 @@ app.post('/users/login', (req, res) => {
 //*  GET  *
 //********* 
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _author: req.user._id
+    }).then((todos) => {
         res.send({todos});
-        console.log('Fetched all todos');
-        
     }, (e) => {
         res.status(400).send(e);
     })
 });
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
 
     if (!ObjectID.isValid(id)) {
       return  res.status(404).send('404 - Object id not valid'); 
     }
 
-    Todo.findById(id).then((todo) => {
+    Todo.findOne({
+        _id: id,
+        _author: req.user._id
+    }).then((todo) => {
         if (todo) {
             res.send({todo});
-            console.log(`Found doc with id: ${id}`);
         } else {
             return res.status(404).send('404 - Object id not found');
         }
@@ -102,17 +103,19 @@ app.get('/users/me', authenticate, (req, res) => {
 //*  DELETE  *
 //************
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
 
     if (!ObjectID.isValid(id)) {
         return  res.status(404).send('404 - Object id not valid'); 
     }
 
-    Todo.findByIdAndRemove(id).then((todo) => {
+    Todo.findOneAndRemove({
+        _id: id,
+        _author: req.user._id
+        }).then((todo) => {
         if (todo) {
             res.send({todo});
-            console.log(`Deleted doc with id: ${id}`);
         } else {
             return res.status(404).send('404 - Object id not found');
         }
@@ -136,7 +139,7 @@ app.delete('/users/logout', authenticate, (req, res) => {
 //*  PATCH   *
 //************
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     var body = _.pick(req.body, ['text', 'completed']);
 
@@ -151,7 +154,10 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({
+        _id: id,
+        _author: req.user._id
+    }, {$set: body}, {new: true}).then((todo) => {
         if (todo) {
             res.send({todo});
         } else {

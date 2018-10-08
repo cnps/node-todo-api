@@ -19,13 +19,19 @@ const users = [{
     _id: userTwoId,
     email: 'goksemanden@mailss.com',
     password: 'userTwoPass',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, '123abc').toString()
+    }]
 }];
 
 const todos = [{
     _id: new ObjectID(),
+    _author: userOneId,
     text: 'First test todo'
 }, {
     _id: new ObjectID(),
+    _author: userTwoId,
     text: 'Second test todo',
     completed: true,
     completedAt: 333
