@@ -53,11 +53,8 @@ app.post('/users/login', (req, res) => {
         return user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send(user);
         });
-        console.log('Credentials found, logging in user');
     }).catch((e) => {
-        res.status(400).send(e);
-        console.log('Could not authenticate user, rejected');
-        
+        res.status(400).send(e); 
     }); 
 })
 
