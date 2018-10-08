@@ -122,6 +122,14 @@ app.delete('/todos/:id', (req, res) => {
     })
 })
 
+app.delete('/users/logout', authenticate, (req, res) => {
+    req.user.removeToken(req.token).then(() => {
+        res.status(200).send();
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
 
 
 //************
